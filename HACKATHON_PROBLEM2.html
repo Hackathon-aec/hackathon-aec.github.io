@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IFC Model Repair Challenge</title>
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-dark: #5b21b6;
+      --accent: #0e9f6e;
+      --bg: #f9fafb;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --code-bg: #f3f4f6;
+      --tag-bg: #f5f3ff;
+      --tag-text: #5b21b6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      padding: 60px 24px 48px;
+      text-align: center;
+    }
+
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 999px;
+      padding: 4px 16px;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    header p {
+      font-size: 18px;
+      color: #fff;
+      opacity: 0.88;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px;
+      margin-bottom: 28px;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2 .icon { font-size: 22px; }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 24px 0 10px;
+      color: #374151;
+    }
+
+    p { margin-bottom: 14px; color: #374151; }
+
+    ul, ol {
+      padding-left: 22px;
+      margin-bottom: 14px;
+      color: #374151;
+    }
+
+    li { margin-bottom: 6px; }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    pre {
+      background: #1e2433;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-size: 13.5px;
+      line-height: 1.65;
+      margin: 16px 0;
+      font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13.5px;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      color: #7c3aed;
+    }
+
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14.5px;
+    }
+
+    thead th {
+      background: #f5f3ff;
+      color: var(--primary-dark);
+      font-weight: 600;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 2px solid #ddd6fe;
+    }
+
+    tbody tr:nth-child(even) { background: #f9fafb; }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    td code { font-size: 12.5px; }
+
+    .tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      border: 1px solid #ddd6fe;
+      border-radius: 999px;
+      padding: 3px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      margin: 3px 3px 3px 0;
+    }
+
+    .tag.green {
+      background: #ecfdf5;
+      color: #065f46;
+      border-color: #6ee7b7;
+    }
+
+    .tag.orange {
+      background: #fff7ed;
+      color: #9a3412;
+      border-color: #fed7aa;
+    }
+
+    .tag.red {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: #fecaca;
+    }
+
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .task-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .task-card .tier {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .task-card h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .task-card p { font-size: 14px; margin: 0; }
+
+    .task-card.core     { border-top: 4px solid var(--primary); }
+    .task-card.extended { border-top: 4px solid var(--accent); }
+    .task-card.bonus    { border-top: 4px solid #f59e0b; }
+
+    .filetree {
+      background: #1e2433;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 13.5px;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    .filetree .dir     { color: #93c5fd; font-weight: 600; }
+    .filetree .file    { color: #d1fae5; }
+    .filetree .comment { color: #6b7280; font-style: italic; }
+
+    .tip-box {
+      background: #f5f3ff;
+      border: 1px solid #ddd6fe;
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      font-size: 14.5px;
+      color: #4c1d95;
+    }
+
+    .tip-box strong { color: #3b0764; }
+
+    .warn-box {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-left: 4px solid #f59e0b;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      font-size: 14.5px;
+      color: #78350f;
+    }
+
+    .noise-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .noise-card {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+
+    .noise-card h5 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #991b1b;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .noise-card p {
+      font-size: 13px;
+      color: #7f1d1d;
+      margin: 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: var(--muted);
+      font-size: 14px;
+      border-top: 1px solid var(--border);
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Hackathon Challenge · Problem 2</div>
+  <h1>IFC Model Repair with AI</h1>
+  <p>
+    Given a corrupted IFC building model, detect structural errors and reconstruct
+    a valid, semantically complete IFC file - using a fine-tuned small language model.
+  </p>
+</header>
+
+<div class="container">
+
+  <!-- Background -->
+  <section>
+    <h2><span class="icon">🏗️</span> Background</h2>
+    <p>
+      IFC (Industry Foundation Classes) is the standard file format for building models (BIM).
+      Real-world IFC files may be broken - missing elements, invalid geometry, disconnected structure.
+      Downstream tools crash or produce wrong results when given such files.
+    </p>
+    <p>
+      Your challenge: build an AI system that takes a corrupted IFC file and repairs it.
+    </p>
+  </section>
+
+  <!-- Dataset -->
+  <section>
+    <h2><span class="icon">📁</span> The Dataset</h2>
+    <p>
+      You are provided with a small set of <strong>sample IFC pairs</strong> (clean + corrupted)
+      to help you understand the data format and the types of faults you will encounter.
+      Beyond these samples you are free - and encouraged - to build your own training dataset:
+      download real IFC files from public sources, generate synthetic ones, and inject faults
+      using your own noise injection script.
+    </p>
+    <p>
+      At evaluation time you will receive <strong>3 corrupted test IFC files</strong>. Your model
+      must detect the faults and output a fully repaired IFC file for each.
+    </p>
+
+    <h3>Provided Files</h3>
+    <div class="filetree">
+      <span class="dir">hackathon_dataset_2/</span><br>
+      &nbsp;&nbsp;<span class="dir">sample_hackathon_dataset_2/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># sample corrupted IFC files showing fault types</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">IFC corner beam intersection.ifc</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">IFC corner column shorter.ifc</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">IFC model .ifc</span><br>
+      <br>
+      &nbsp;&nbsp;<span class="dir">test_problems/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 3 corrupted test IFCs - repair these</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">corrupted_ifc/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">tp_0501.ifc</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">tp_0502.ifc</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">tp_0503.ifc</span>
+    </div>
+
+    <h3>Sample Files Description</h3>
+    <table>
+      <thead>
+        <tr><th>File</th><th>Elements</th><th>Fault(s)</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>IFC corner beam intersection.ifc</code></td>
+          <td>12 columns, 4 beams, 1 slab</td>
+          <td>Beams intersect columns at corners; 16 truncated polylines (&lt;3 points)</td>
+        </tr>
+        <tr>
+          <td><code>IFC corner column shorter.ifc</code></td>
+          <td>12 columns, 12 beams</td>
+          <td>Column height shorter than storey height; 24 truncated polylines</td>
+        </tr>
+        <tr>
+          <td><code>IFC model .ifc</code></td>
+          <td>16 columns, 24 beams, 24 walls, 1 slab, 7 openings</td>
+          <td>No IFCSPACE entities (missing spatial elements); 52 truncated polylines</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Where to Get More IFC Files</h3>
+    <p>You are expected to source additional IFC files to build your training dataset. Suggested public repositories:</p>
+    <table>
+      <thead><tr><th>Source</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://github.com/buildingSMART/Sample-Test-Files" target="_blank">buildingSMART / Sample-Test-Files</a></td><td>Official buildingSMART test IFCs covering IFC 2x3 and IFC 4</td></tr>
+        <tr><td><a href="https://github.com/IfcOpenShell/IfcOpenShell/tree/master/test/input" target="_blank">IfcOpenShell test inputs</a></td><td>Diverse real and synthetic IFC files used in IfcOpenShell CI</td></tr>
+        <tr><td><a href="https://github.com/jakob-beetz/ifcopenshell-notebooks" target="_blank">ifcOpenshell notebooks (GitHub)</a></td><td>Tutorial notebooks with bundled IFC sample files</td></tr>
+        <tr><td><a href="https://www.nibs.org/page/bsa_commonbimfiles" target="_blank">NIBS Common BIM Files</a></td><td>Real building models shared by the National Institute of Building Sciences</td></tr>
+        <tr><td><a href="https://bonsaibim.org/" target="_blank">Bonsai BIM (FreeCAD addon)</a></td><td>Export your own IFC 2x3 models from open-source BIM authoring tools</td></tr>
+      </tbody>
+    </table>
+
+    <h3>IFC File Structure</h3>
+    <p>
+      Each <code>.ifc</code> file is a plain text file in STEP format. It has a header and a data section.
+      Below is taken directly from <code>IFC model .ifc</code> in <code>sample_hackathon_dataset_2/</code>:
+    </p>
+    <pre><code>ISO-10303-21;
+HEADER;
+FILE_DESCRIPTION(('no view'),'2;1');
+FILE_NAME('Test IFC model.ifc','2026-04-16T20:27:01',('Gaurav Kumar Aggarwal'),('No Organization',''),'ODA SDAI 25.4','','gkaggarwal');
+FILE_SCHEMA(('IFC2X3'));
+ENDSEC;
+
+DATA;
+#1=IFCPERSON($,'Aggarwal','Gaurav Kumar',$,$,$,$,$);
+#5=IFCOWNERHISTORY(#3,#4,$,.NOCHANGE.,$,$,$,1776351420);
+#6=IFCUNITASSIGNMENT((#7,#8,#9,#10,#14,#20,#28));
+#7=IFCSIUNIT(*,.LENGTHUNIT.,$,.METRE.);
+#31=IFCPROJECT('1xQcHvQ6j72xuabmuaT4K3',#5,'For IFC testing',$,$,$,$,(#32),#6);
+#33=IFCBUILDING('3EDmDtY1P31OpEUrYzkrZb',#5,'Building',$,$,#36,$,$,.ELEMENT.,$,$,$);
+#37=IFCBUILDINGSTOREY('1I$OEmFwb0dfLQlFygoNz8',#5,'Ground floor',$,$,#40,$,$,.ELEMENT.,0.);
+#482=IFCRELCONTAINEDINSPATIALSTRUCTURE('3pao28ZO50aA8IifzHISnu',#5,$,$,(#67,#94,#121,...),#37);
+#509=IFCCOLUMN('1nChuMS3z3deKfNve4ghPR',#5,' ',$,$,#485,#486,$);
+...
+ENDSEC;
+END-ISO-10303-21;</code></pre>
+
+    <p>
+      Each line starts with an entity ID (<code>#N</code>), followed by the entity type and its attributes.
+      References like <code>#37</code> point to other entities by ID. A <code>$</code> means a null/optional attribute.
+    </p>
+
+    <h3>What Each File Contains</h3>
+    <p>Entity counts from the actual <code>sample_hackathon_dataset_2/</code> files:</p>
+    <table>
+      <thead>
+        <tr><th>IFC Entity</th><th>Meaning</th><th>Count in samples</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>IFCPROJECT</code></td><td>Top-level project container</td><td>1</td></tr>
+        <tr><td><code>IFCBUILDING</code></td><td>Building container</td><td>1</td></tr>
+        <tr><td><code>IFCBUILDINGSTOREY</code></td><td>Floor / storey level</td><td>1</td></tr>
+        <tr><td><code>IFCCOLUMN</code></td><td>Structural column</td><td>12-16</td></tr>
+        <tr><td><code>IFCBEAM</code></td><td>Structural beam</td><td>4-24</td></tr>
+        <tr><td><code>IFCWALL</code> / <code>IFCWALLSTANDARDCASE</code></td><td>Wall element</td><td>0-24</td></tr>
+        <tr><td><code>IFCSLAB</code></td><td>Floor or roof slab</td><td>0-1</td></tr>
+        <tr><td><code>IFCDOOR</code> / <code>IFCWINDOW</code></td><td>Openings</td><td>0-7</td></tr>
+        <tr><td><code>IFCRELCONTAINEDINSPATIALSTRUCTURE</code></td><td>Links elements to their storey</td><td>1-6</td></tr>
+        <tr><td><code>IFCEXTRUDEDAREASOLID</code></td><td>3D geometry (extrusion)</td><td>45-100</td></tr>
+        <tr><td><code>IFCPOLYLINE</code></td><td>Cross-section profile boundary</td><td>24-64</td></tr>
+      </tbody>
+    </table>
+
+    <div class="tip-box">
+      <strong>IFC has hundreds of entity types</strong> — you do not need to handle them all.
+      Focus on the classes present in the sample files (listed above). These cover the core
+      floor-plan elements: spatial containers (<code>IFCPROJECT</code>, <code>IFCBUILDING</code>,
+      <code>IFCBUILDINGSTOREY</code>, <code>IFCSPACE</code>), building elements
+      (<code>IFCWALL</code>, <code>IFCCOLUMN</code>, <code>IFCBEAM</code>, <code>IFCSLAB</code>,
+      <code>IFCDOOR</code>, <code>IFCWINDOW</code>), geometry primitives
+      (<code>IFCEXTRUDEDAREASOLID</code>, <code>IFCPOLYLINE</code>), and the relationship
+      entity (<code>IFCRELCONTAINEDINSPATIALSTRUCTURE</code>) that links elements to their storey.
+      A repair pipeline that handles this subset correctly will cover the test cases.
+    </div>
+  </section>
+
+  <!-- Noise injection -->
+  <section id="fault-types">
+    <h2><span class="icon">⚠️</span> IFC Fault Types</h2>
+    <p>
+      The test IFC files contain one or more of the fault categories below, as observed in
+      the provided <code>sample_hackathon_dataset_2/</code> files.
+      These categories are <strong>illustrative - not exhaustive</strong>: real IFC files
+      can exhibit a much wider range of structural and semantic issues. Build a general-purpose
+      repair pipeline.
+    </p>
+    <p>
+      Study the files in <code>sample_hackathon_dataset_2/</code> to understand how each fault manifests
+      in raw STEP text.
+    </p>
+
+    <h3>Observed Fault Categories</h3>
+
+    <div class="noise-grid">
+      <div class="noise-card">
+        <h5>Element Clash</h5>
+        <p>Two solid elements (e.g. a beam and a column) occupy overlapping 3-D space.
+        Seen in <em>IFC corner beam intersection.ifc</em> - beams intersect columns
+        at corner nodes in a physically impossible way.</p>
+      </div>
+      <div class="noise-card">
+        <h5>Geometric Inconsistency</h5>
+        <p>An element’s geometry does not match its intended structural role - e.g. a
+        column that is shorter than the storey height it is supposed to span.
+        Seen in <em>IFC corner column shorter.ifc</em>.</p>
+      </div>
+      <div class="noise-card">
+        <h5>Truncated Geometry</h5>
+        <p><code>IFCPOLYLINE</code> instances with fewer than 3 points, making them
+        invalid as closed profiles. Found across all three sample files - the
+        boundary curves of structural cross-sections are incomplete.</p>
+      </div>
+      <div class="noise-card">
+        <h5>Missing Spatial Elements</h5>
+        <p>A building model contains walls, beams, and columns but no
+        <code>IFCSPACE</code> entities - the spatial decomposition is absent.
+        Seen in <em>IFC model .ifc</em>.</p>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      <strong>Not limited to the above.</strong> The test files may also exhibit missing
+      properties, disconnected floors, dangling entity references, duplicate GlobalIds,
+      or combinations of multiple fault types. Build a general-purpose repair pipeline.
+    </div>
+  </section>
+
+  <!-- Tasks -->
+  <section>
+    <h2><span class="icon">🎯</span> Tasks</h2>
+    <p>Three stages, each building on the previous. All three are required.</p>
+
+    <div class="task-grid">
+      <div class="task-card core">
+        <div class="tier">Stage 1</div>
+        <h4>Corrupt - Build Your Dataset</h4>
+        <p>
+          Source real IFC files (provided samples + public repositories), build a pipeline
+          that introduces realistic faults, and generate your own (corrupted, clean) training pairs.
+          Diversity of fault types and volume of data are both rewarded.
+        </p>
+      </div>
+      <div class="task-card core">
+        <div class="tier">Stage 2</div>
+        <h4>Model Building - Train Your Repair Model</h4>
+        <p>
+          Build an AI model (fine-tuned SLM ≤ 4 B params, or any other approach) on your training
+          pairs. Your model must accept a corrupted IFC file and produce a repaired version.
+          It must also output a structured fault report classifying what it found.
+        </p>
+      </div>
+      <div class="task-card core">
+        <div class="tier">Stage 3</div>
+        <h4>Repair - Run on Test Problems</h4>
+        <p>
+          Run your repair pipeline on the <strong>3 provided test IFC files</strong> and submit the
+          repaired outputs. Evaluation measures fault detection accuracy, schema validity,
+          entity recovery, and spatial / geometric coherence against hidden ground truth.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Evaluation -->
+  <section>
+    <h2><span class="icon">📊</span> Evaluation</h2>
+
+    <table>
+      <thead><tr><th>What we check</th><th>How</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Fault detection</strong></td><td>Did you identify the right entities as faulty and label the fault type correctly?</td></tr>
+        <tr><td><strong>Schema validity</strong></td><td>Does your repaired file pass <code>ifcopenshell.validate</code> with zero errors?</td></tr>
+        <tr><td><strong>Entity recovery</strong></td><td>Are missing or broken entities correctly restored compared to ground truth?</td></tr>
+        <tr><td><strong>Spatial coherence</strong></td><td>Are building elements correctly placed and linked to their floor?</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Submission -->
+  <section>
+    <h2><span class="icon">📤</span> Submission Format</h2>
+    <p>Submit a <strong>ZIP archive</strong> containing the following. All test files are named <code>tp_0501</code> through <code>tp_0503</code>.</p>
+
+    <div class="filetree">
+      <span class="dir">submission/</span><br>
+      &nbsp;&nbsp;<span class="file">report.pdf</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 2-4 page write-up (approach, results, ablations)</span><br>
+      &nbsp;&nbsp;<span class="dir">repaired_ifc/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># one repaired .ifc per test problem (tp_0501-tp_0503)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">tp_0501.ifc</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">tp_0502.ifc</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">tp_0503.ifc</span><br>
+      &nbsp;&nbsp;<span class="file">fault_report.jsonl</span>&nbsp;&nbsp;<span class="comment"># one JSON line per file: detected faults + types</span><br>
+      &nbsp;&nbsp;<span class="dir">src/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># your code (any structure, any language)</span><br>
+      &nbsp;&nbsp;<span class="dir">model/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># fine-tuned weights or HuggingFace model id (optional)</span>
+    </div>
+
+    <table>
+      <thead><tr><th>Item</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>README.md</code></td><td>Yes</td><td>Step-by-step commands to install dependencies, train the model, and run the repair pipeline on the test files.</td></tr>
+        <tr><td><code>report.pdf</code></td><td>Yes</td><td>2-4 pages. Describe your pipeline, how you detect and repair each fault type, and any evaluation results on the sample data.</td></tr>
+        <tr><td><code>repaired_ifc/tp_XXXX.ifc</code></td><td>Yes</td><td>A valid IFC 2x3 file with all detected faults repaired. Must open without errors in <code>ifcopenshell</code>. One file per test problem.</td></tr>
+        <tr><td><code>fault_report.jsonl</code></td><td>Yes</td><td>One JSON object per line, one line per test file. Lists every fault your system detected, including entity ID, category, and a short description.</td></tr>
+        <tr><td><code>src/</code></td><td>Yes</td><td>All code used to produce your repaired files and fault report. No specific structure required.</td></tr>
+        <tr><td><code>model/</code></td><td>Optional</td><td>Fine-tuned model weights, a HuggingFace model ID, or a link to where the model is hosted.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>fault_report.jsonl - Schema</h3>
+    <p>
+      One JSON object per line (JSONL format), one line per test file. For each detected fault, provide the IFC entity reference (<code>#id</code>), a short label describing the fault category (<code>fault_type</code>), and a human-readable description of what is wrong.
+    </p>
+    <pre><code># fault_report.jsonl - one object per line
+{
+  "id": "tp_0501",
+  "faults": [
+    {
+      "entity_id": "#802",
+      "fault_type": "&lt;your_fault_label&gt;",
+      "description": "short description of the fault"
+    },
+    {
+      "entity_id": "#316",
+      "fault_type": "&lt;your_fault_label&gt;",
+      "description": "short description of the fault"
+    }
+  ]
+}</code></pre>
+
+  </section>
+
+  <!-- Getting started -->
+  <section>
+    <h2><span class="icon">🚀</span> Getting Started</h2>
+    <p>
+      Install <a href="https://ifcopenshell.org/" target="_blank">IfcOpenShell</a> - the primary
+      toolkit you will need to read, write, validate, and manipulate IFC files:
+    </p>
+    <pre><code>pip install ifcopenshell</code></pre>
+    <p>
+      IfcOpenShell lets you open any IFC file as a Python object, query entities by type,
+      read and set attributes, remove or add entities, and validate the file against the IFC 2x3
+      schema. Study the
+      <a href="https://docs.ifcopenshell.org/" target="_blank">IfcOpenShell documentation</a>
+      and the provided <code>sample_hackathon_dataset_2/</code> to understand the data format before
+      building your pipeline.
+    </p>
+  </section>
+
+<!-- Resources -->
+  <section>
+    <h2><span class="icon">🔗</span> Resources</h2>
+    <ul>
+      <li><a href="https://www.buildingsmart.org/standards/bsi-standards/industry-foundation-classes/" target="_blank">IFC Standard - buildingSMART International</a></li>
+      <li><a href="https://ifcopenshell.org/" target="_blank">IfcOpenShell - open-source IFC toolkit</a></li>
+      <li><a href="https://standards.buildingsmart.org/IFC/RELEASE/IFC2x3/FINAL/HTML/" target="_blank">IFC 2x3 Schema Reference</a></li>
+      <li><a href="https://huggingface.co/docs/peft/index" target="_blank">PEFT / LoRA fine-tuning guide (HuggingFace)</a></li>
+      <li><a href="https://huggingface.co/docs/trl/index" target="_blank">TRL - fine-tuning with RLHF / SFT</a></li>
+      <li><a href="https://github.com/outlines-dev/outlines" target="_blank">Outlines - grammar-constrained text generation</a></li>
+    </ul>
+
+    <h3>Allowed Models (pre-trained base only)</h3>
+    <div>
+      <span class="tag">Phi-2 (2.7 B)</span>
+      <span class="tag">Phi-3 Mini (3.8 B)</span>
+      <span class="tag">Qwen 2.5 1.5 B</span>
+      <span class="tag">Qwen 2.5 3 B</span>
+      <span class="tag">Gemma-2 2 B</span>
+      <span class="tag">SmolLM2 1.7 B</span>
+      <span class="tag green">Any open model ≤ 4 B params</span>
+      <span class="tag orange">No GPT-4 / Claude API calls</span>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  Hackathon Challenge · Problem 2 &nbsp;|&nbsp; IFC Model Repair
+</footer>
+
+</body>
+</html>

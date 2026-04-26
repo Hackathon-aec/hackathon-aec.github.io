@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Floor Plan Understanding Challenge</title>
+  <style>
+    :root {
+      --primary: #1a56db;
+      --primary-dark: #1e429f;
+      --accent: #0e9f6e;
+      --bg: #f9fafb;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --code-bg: #f3f4f6;
+      --tag-bg: #eff6ff;
+      --tag-text: #1d4ed8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      padding: 60px 24px 48px;
+      text-align: center;
+    }
+
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 999px;
+      padding: 4px 16px;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    header p {
+      font-size: 18px;
+      color: #fff;
+      opacity: 0.88;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px;
+      margin-bottom: 28px;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2 .icon {
+      font-size: 22px;
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 24px 0 10px;
+      color: #374151;
+    }
+
+    p { margin-bottom: 14px; color: #374151; }
+
+    ul, ol {
+      padding-left: 22px;
+      margin-bottom: 14px;
+      color: #374151;
+    }
+
+    li { margin-bottom: 6px; }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Code */
+    pre {
+      background: #1e2433;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-size: 13.5px;
+      line-height: 1.65;
+      margin: 16px 0;
+      font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13.5px;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      color: #be185d;
+    }
+
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14.5px;
+    }
+
+    thead th {
+      background: #f0f4ff;
+      color: var(--primary-dark);
+      font-weight: 600;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 2px solid #c7d2fe;
+    }
+
+    tbody tr:nth-child(even) { background: #f9fafb; }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    td code { font-size: 12.5px; }
+
+    /* Tags */
+    .tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      padding: 3px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      margin: 3px 3px 3px 0;
+    }
+
+    .tag.green {
+      background: #ecfdf5;
+      color: #065f46;
+      border-color: #6ee7b7;
+    }
+
+    .tag.orange {
+      background: #fff7ed;
+      color: #9a3412;
+      border-color: #fed7aa;
+    }
+
+    /* Task cards */
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .task-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .task-card .tier {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .task-card h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .task-card p { font-size: 14px; margin: 0; }
+
+    .task-card.core { border-top: 4px solid var(--primary); }
+    .task-card.extended { border-top: 4px solid var(--accent); }
+    .task-card.bonus { border-top: 4px solid #f59e0b; }
+
+    /* File tree */
+    .filetree {
+      background: #1e2433;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 13.5px;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    .filetree .dir { color: #93c5fd; font-weight: 600; }
+    .filetree .file { color: #d1fae5; }
+    .filetree .comment { color: #6b7280; font-style: italic; }
+
+    /* Tip box */
+    .tip-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      font-size: 14.5px;
+      color: #065f46;
+    }
+
+    .tip-box strong { color: #064e3b; }
+
+    /* Index table color chips */
+    .chip {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-right: 6px;
+      border: 1px solid rgba(0,0,0,0.12);
+    }
+
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: var(--muted);
+      font-size: 14px;
+      border-top: 1px solid var(--border);
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Hackathon Challenge</div>
+  <h1>Floor Plan Understanding Challenge</h1>
+  <p>
+    Given a 2D floor plan image, automatically detect, classify, and localize
+    structural elements - and produce a machine-readable building model.
+  </p>
+</header>
+
+<div class="container">
+
+  <!-- Background -->
+  <section>
+    <h2><span class="icon">🏗️</span> Background</h2>
+    <p>
+      Architectural floor plans are the primary communication medium in the construction industry.
+      Billions of existing buildings have their layouts locked inside scanned drawings or raster images -
+      inaccessible to modern BIM (Building Information Modeling) tools.
+    </p>
+    <p>
+      Automating the extraction of structured floor plan data from images is a high-value open problem
+      in AEC (Architecture, Engineering, and Construction). This challenge asks you to build that bridge:
+      from raw image to structured, semantic building model.
+    </p>
+  </section>
+
+  <!-- Dataset -->
+  <section>
+    <h2><span class="icon">📁</span> The Dataset</h2>
+    <p>You are provided with <strong>500 training floor plans</strong> and <strong>100 test floor plans</strong> derived from a real-world residential dataset. All samples are <strong>single-floor buildings</strong> - multi-floor entries have been excluded. Annotations (SVG) are provided for training only; test images have no annotations.</p>
+
+    <h3>Folder Structure</h3>
+    <div class="filetree">
+      <span class="dir">hackathon_dataset_1/</span><br>
+      &nbsp;&nbsp;<span class="dir">train/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">images/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># floor plan images (PNG, ~1000x1500 px)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0001.png</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0002.png</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">...</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0500.png</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">annotations/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># ground truth SVG models</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0001.svg</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0002.svg</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">...</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0500.svg</span><br>
+      &nbsp;&nbsp;<span class="dir">test/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">images/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># test images - no annotations provided</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0501.png</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0502.png</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">...</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0600.png</span>
+    </div>
+
+    <h3>Images</h3>
+    <ul>
+      <li>Format: PNG, normalized resolution (~1000 x 1500 px)</li>
+      <li>Content: Rendered 2D floor plan, single floor per file</li>
+      <li>Coordinate space: Directly matches the SVG <code>width</code> × <code>height</code> - no rescaling needed</li>
+    </ul>
+
+    <h3>Annotations (SVG)</h3>
+    <p>
+      Each annotation is a standard <strong>Scalable Vector Graphics (SVG)</strong> file — an XML-based format where rooms, walls, doors, and windows are represented as <code>&lt;polygon&gt;</code> elements grouped inside <code>&lt;g&gt;</code> tags. The semantic meaning of each element is encoded in the CSS <code>class</code> attribute of its group (e.g. <code>Space LivingRoom</code>, <code>Wall External</code>). SVG units match pixel coordinates in the corresponding PNG — no rescaling is needed.
+    </p>
+    <p>
+      <strong>Parsing approaches (not limited to):</strong>
+    </p>
+    <ul>
+      <li><code>xml.etree.ElementTree</code> — Python standard library, lightweight, sufficient for most cases</li>
+      <li><code>lxml.etree</code> — faster, supports XPath queries for more complex traversal</li>
+      <li><code>BeautifulSoup</code> with <code>xml</code> parser — convenient for exploratory work</li>
+      <li>Direct string / regex parsing of the <code>points</code> attribute if only coordinates are needed</li>
+    </ul>
+    <p>
+      Each SVG encodes the complete floor plan structure using semantic CSS <code>class</code> attributes.
+      All geometry is represented as polygon coordinates in SVG units aligned to the image dimensions.
+    </p>
+
+    <table>
+      <thead>
+        <tr><th>Element</th><th>Class pattern</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Room</td><td><code>Space &lt;RoomType&gt;</code></td><td>Polygon footprint + semantic room type</td></tr>
+        <tr><td>External wall</td><td><code>Wall External</code></td><td>Outer building envelope</td></tr>
+        <tr><td>Internal wall</td><td><code>Wall</code></td><td>Interior partition wall</td></tr>
+        <tr><td>Window</td><td><code>Window Regular</code></td><td>Nested inside a <code>Wall</code> element</td></tr>
+        <tr><td>Door</td><td><code>Door Swing ...</code></td><td>Nested inside a <code>Wall</code> element</td></tr>
+        <tr><td>Furniture</td><td><code>FixedFurniture &lt;Type&gt;</code></td><td>Fixed fixtures (sauna bench, stove, etc.)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reading Polygon Coordinates from SVG</h3>
+    <p>
+      Each room or wall is a <code>&lt;polygon&gt;</code> element inside a <code>&lt;g&gt;</code> group. Read the <code>points</code> attribute — it is a space-separated list of <code>x,y</code> pairs in SVG units (which equal pixel positions in the matching <code>.png</code>):
+    </p>
+    <pre><code>&lt;g class="Space LivingRoom"&gt;
+  &lt;polygon points="100.5,80.2 300.0,80.2 300.0,250.0 100.5,250.0" /&gt;
+&lt;/g&gt;</code></pre>
+    <div class="tip-box">
+      <strong>Note:</strong> Some <code>&lt;g&gt;</code> groups contain child <code>&lt;g&gt;</code> elements. Always check for a <code>&lt;polygon&gt;</code> at any depth within the group, and test <code>if polygon_elem is not None:</code> (not a boolean check) because an empty element evaluates to <code>False</code> in Python.
+    </div>
+
+    <h3>SVG Class → Segmentation Index Mapping</h3>
+    <p>Use the second word of the <code>class</code> attribute (e.g. <code>Space <strong>LivingRoom</strong></code>) to determine the room type, then map it to the class index for your segmentation mask:</p>
+    <table>
+      <thead><tr><th>SVG class attribute</th><th>Class index</th><th>Label</th></tr></thead>
+      <tbody>
+        <tr><td>Background (pixels not covered by any element)</td><td>0</td><td>Background</td></tr>
+        <tr><td><code>Space LivingRoom</code> / <code>Space Living</code></td><td>1</td><td>LivingRoom</td></tr>
+        <tr><td><code>Space Bedroom</code></td><td>2</td><td>Bedroom</td></tr>
+        <tr><td><code>Space Kitchen</code></td><td>3</td><td>Kitchen</td></tr>
+        <tr><td><code>Space Bathroom</code> / <code>Space Bath</code> / <code>Space Sauna</code> / <code>Space WC</code></td><td>4</td><td>Bath</td></tr>
+        <tr><td><code>Space Entry</code> / <code>Space Lobby</code> / <code>Space DraughtLobby</code> / <code>Space Hallway</code></td><td>5</td><td>Entry / Lobby</td></tr>
+        <tr><td><code>Space Balcony</code> / <code>Space Outdoor</code></td><td>6</td><td>Balcony / Outdoor</td></tr>
+        <tr><td><code>Wall</code> / <code>Wall External</code></td><td>7</td><td>Wall</td></tr>
+        <tr><td><code>Door Swing ...</code> (any Door element)</td><td>8</td><td>Door</td></tr>
+        <tr><td><code>Window Regular</code> (any Window element)</td><td>9</td><td>Window</td></tr>
+        <tr><td><code>Space Undefined</code> / <code>Space Laundry</code> / <code>Space Closet</code> / <code>Space ClosetRoom</code> / <code>Space UserDefined</code></td><td>10</td><td>Undefined</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Room Types</h3>
+    <div>
+      <span class="tag">LivingRoom</span>
+      <span class="tag">Bedroom</span>
+      <span class="tag">Kitchen</span>
+      <span class="tag">Bath</span>
+      <span class="tag">Entry</span>
+      <span class="tag">Lobby</span>
+      <span class="tag">Balcony</span>
+      <span class="tag">Outdoor</span>
+      <span class="tag orange">Undefined</span>
+    </div>
+  </section>
+
+  <!-- Tasks -->
+  <section>
+    <h2><span class="icon">🎯</span> Tasks</h2>
+    <p>All stages are mandatory and build on each other.</p>
+
+    <div class="task-grid">
+      <div class="task-card core">
+        <div class="tier">Stage 1</div>
+        <h4>Semantic Room Segmentation</h4>
+        <p>Given a floor plan image, produce a pixel-level segmentation assigning each spatial region to a room type class.</p>
+      </div>
+      <div class="task-card extended">
+        <div class="tier">Stage 2</div>
+        <h4>Room &amp; Wall Outline Detection</h4>
+        <p>Instead of coloring pixels, draw the exact shape of each room and wall as a polygon - a list of corner coordinates. Your output describes <em>where</em> each room is and what type it is (bedroom, kitchen, etc.).</p>
+      </div>
+      <div class="task-card bonus">
+        <div class="tier">Stage 3</div>
+        <h4>IFC Generation</h4>
+        <p>Convert your predicted floor plan model into a valid IFC file using <code>ifcopenshell</code> with correct spatial hierarchy. IFC coordinates must be in <strong>metres</strong>: multiply all pixel coordinates by <code>0.01</code> (1 pixel = 0.01 m). Use a default storey height of <strong>3.0 m</strong>. Set each room as an <code>IfcSpace</code> entity with its <code>Name</code> property equal to the room type label (e.g. <code>&quot;LivingRoom&quot;</code>, <code>&quot;Bedroom&quot;</code>) so room types are carried into the BIM model.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden;">
+      <div style="background: #f0f4ff; padding: 10px 16px; border-bottom: 1px solid #c7d2fe;">
+        <span style="font-size: 13px; font-weight: 600; color: var(--primary-dark);">Example output - raw image → Stage 1 (pixel labels) → Stage 2 (room outlines)</span>
+      </div>
+      <img src="hack_image_1.jpg" alt="Stage 1 and Stage 2 expected output example"
+           style="display: block; width: 100%; height: auto;" />
+    </div>
+
+    <div class="tip-box" style="margin-top: 20px;">
+      <strong>Important:</strong> The SVG annotations are provided for <em>training only</em>.
+      At inference time your model must work from the image alone - do not pass SVG files through at test time.
+    </div>
+  </section>
+
+  <!-- Evaluation -->
+  <section>
+    <h2><span class="icon">📊</span> Evaluation</h2>
+
+    <table>
+      <thead><tr><th>Stage</th><th>Metric</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Stage 1</strong> - Segmentation</td><td>mIoU (mean Intersection over Union) across all room types</td></tr>
+        <tr><td><strong>Stage 2</strong> - Outlines</td><td>Polygon IoU per room + room type accuracy</td></tr>
+        <tr><td><strong>Stage 3</strong> - IFC</td><td>Does the file open correctly? Are rooms and spatial hierarchy valid?</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Submission -->
+  <section>
+    <h2><span class="icon">📦</span> Submission Format</h2>
+
+    <p>Your submission should have the below structure. All test files are named <code>fp_0501</code> through <code>fp_0600</code>.</p>
+    <div class="filetree">
+      <span class="dir">submission/</span><br>
+      &nbsp;&nbsp;<span class="file">README.md</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># commands to install, train, and run inference</span><br>
+      &nbsp;&nbsp;<span class="file">report.pdf</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># approach, model, training details (max 1 page)</span><br>
+      &nbsp;&nbsp;<span class="dir">masks/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># Stage 1 - segmentation masks (PNG)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0501.png</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0502.png</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">...</span><br>
+      &nbsp;&nbsp;<span class="dir">polygons/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># Stage 2 - room &amp; wall outline JSON files</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0501.json</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0502.json</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">...</span><br>
+      &nbsp;&nbsp;<span class="dir">ifc/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># Stage 3 - generated IFC files</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0501.ifc</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">fp_0502.ifc</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">...</span><br>
+      &nbsp;&nbsp;<span class="dir">src/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># your code (any structure)</span>
+    </div>
+
+    <table>
+      <thead><tr><th>Item</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>README.md</code></td><td>Yes</td><td>Step-by-step commands to install dependencies, train the model, and run inference on the test set.</td></tr>
+        <tr><td><code>report.pdf</code></td><td>Yes</td><td>Max 1 page. Describe your approach, model architecture, training data, and any key design decisions.</td></tr>
+        <tr><td><code>masks/fp_XXXX.png</code></td><td>Yes</td><td>Grayscale PNG. Same pixel dimensions as the input image. Each pixel value is a class index (0-10). One file per test image.</td></tr>
+        <tr><td><code>polygons/fp_XXXX.json</code></td><td>Yes</td><td>JSON file with the outline (polygon) of each detected room and wall, plus the room type label. Coordinates are pixel positions in the input image. One file per test image.</td></tr>
+        <tr><td><code>ifc/fp_XXXX.ifc</code></td><td>Yes</td><td>Valid IFC 2x3 file with correct spatial hierarchy (IfcProject - IfcSite - IfcBuilding - IfcBuildingStorey - IfcSpace). IFC coordinates are in <strong>metres</strong> — use a scale of <code>1 pixel = 0.01 m</code> (i.e. multiply pixel coordinates by 0.01). Use a default storey height of <strong>3.0 m</strong>. One file per test image.</td></tr>
+        <tr><td><code>src/</code></td><td>Yes</td><td>All code used to produce your predictions. No specific structure required.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>masks/ - Segmentation Mask (PNG)</h3>
+    <p>
+      Grayscale PNG, same pixel dimensions as the input image. Each pixel value is a class index from the table below.
+    </p>
+
+    <table>
+      <thead><tr><th>Index</th><th>Class</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td><span class="chip" style="background:#e5e7eb;"></span>Background</td></tr>
+        <tr><td>1</td><td><span class="chip" style="background:#fca5a5;"></span>LivingRoom</td></tr>
+        <tr><td>2</td><td><span class="chip" style="background:#93c5fd;"></span>Bedroom</td></tr>
+        <tr><td>3</td><td><span class="chip" style="background:#86efac;"></span>Kitchen</td></tr>
+        <tr><td>4</td><td><span class="chip" style="background:#c4b5fd;"></span>Bath</td></tr>
+        <tr><td>5</td><td><span class="chip" style="background:#fdba74;"></span>Entry / Lobby</td></tr>
+        <tr><td>6</td><td><span class="chip" style="background:#6ee7b7;"></span>Balcony / Outdoor</td></tr>
+        <tr><td>7</td><td><span class="chip" style="background:#374151;"></span>Wall</td></tr>
+        <tr><td>8</td><td><span class="chip" style="background:#a78bfa;"></span>Door</td></tr>
+        <tr><td>9</td><td><span class="chip" style="background:#f0abfc;"></span>Window</td></tr>
+        <tr><td>10</td><td><span class="chip" style="background:#d1d5db;"></span>Undefined</td></tr>
+      </tbody>
+    </table>
+
+    <h3>polygons/ - Room &amp; Wall Outlines (JSON)</h3>
+    <p>
+      One JSON file per test image. For each room, provide its type (e.g. <code>LivingRoom</code>) and a list of corner coordinates (polygon) that traces its outline. Do the same for each wall segment. Coordinates are pixel positions measured from the top-left of the input image.
+    </p>
+    <pre><code class="language-json">{
+  "image": "fp_0001.png",
+  "rooms": [
+    {
+      "type": "LivingRoom",
+      "polygon": [[x1, y1], [x2, y2], "..."]
+    }
+  ],
+  "walls": [
+    {
+      "type": "External",
+      "polygon": [[x1, y1], "..."]
+    }
+  ]
+}</code></pre>
+
+    <h3>ifc/ - IFC Space Name Strings</h3>
+    <p>
+      When creating each <code>IfcSpace</code>, set its <code>Name</code> to the canonical string from the table below. The evaluator accepts common aliases (e.g. <code>Bathroom</code>, <code>WC</code>, <code>Living Room</code>) but using the canonical names is safest. Walls, doors, and windows do not need to be <code>IfcSpace</code> entities.
+    </p>
+    <table>
+      <thead><tr><th>Class index</th><th>Label</th><th>IfcSpace Name to use</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>LivingRoom</td><td><code>LivingRoom</code></td></tr>
+        <tr><td>2</td><td>Bedroom</td><td><code>Bedroom</code></td></tr>
+        <tr><td>3</td><td>Kitchen</td><td><code>Kitchen</code></td></tr>
+        <tr><td>4</td><td>Bath</td><td><code>Bath</code></td></tr>
+        <tr><td>5</td><td>Entry / Lobby</td><td><code>Entry</code></td></tr>
+        <tr><td>6</td><td>Balcony / Outdoor</td><td><code>Balcony</code></td></tr>
+        <tr><td>10</td><td>Undefined</td><td><code>Undefined</code></td></tr>
+      </tbody>
+    </table>
+    <div class="tip-box">
+      Background (0), Wall (7), Door (8), and Window (9) are <strong>not</strong> represented as <code>IfcSpace</code> entities — only rooms (indices 1–6, 10) become spaces.
+    </div>
+  </section>
+
+  <!-- What you can use -->
+  <section>
+    <h2><span class="icon">🛠️</span> What You Can Use</h2>
+    <ul>
+      <li>Any ML framework - PyTorch, TensorFlow, JAX, etc.</li>
+      <li>Pre-trained vision models - fine-tuning is allowed and encouraged</li>
+      <li><code>ifcopenshell</code> for IFC generation (Stage 3)</li>
+      <li><code>opencv-python</code>, <code>Pillow</code>, <code>shapely</code>, <code>rasterio</code> for geometry processing</li>
+      <li>Standard data augmentation libraries</li>
+    </ul>
+    <p>
+      <strong>Not allowed:</strong> Using the provided SVG annotations as direct pass-through at inference time.
+      Training on external floor plan datasets is permitted with disclosure.
+    </p>
+  </section>
+
+
+  <!-- Resources -->
+  <section>
+    <h2><span class="icon">📚</span> Resources</h2>
+    <ul>
+      <li><a href="https://blenderbim.org/docs-python/ifcopenshell.html" target="_blank">ifcopenshell Python documentation</a></li>
+      <li><a href="https://standards.buildingsmart.org/IFC/RELEASE/IFC4/" target="_blank">IFC4 schema reference - buildingSMART</a></li>
+      <li><a href="https://shapely.readthedocs.io/" target="_blank">Shapely - geometric operations in Python</a></li>
+    </ul>
+  </section>
+
+</div>
+
+<footer>
+  Floor Plan Understanding Challenge &mdash; Hackathon 2026
+</footer>
+
+</body>
+</html>
