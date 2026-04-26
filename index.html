@@ -270,6 +270,35 @@
     .problem-card .btn:hover { background: var(--primary-dark); text-decoration: none; }
     .problem-card.p2 .btn:hover { background: var(--accent-dark); }
 
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      background: transparent;
+      color: var(--primary-dark);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .problem-card.p2 .btn-ghost { color: var(--accent-dark); }
+
+    .btn-ghost:hover {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+      text-decoration: none;
+    }
+
     /* Tags */
     .tag {
       display: inline-block;
@@ -536,7 +565,10 @@
             <span class="tag">Vectorization</span>
             <span class="tag green">PNG · SVG · JSON</span>
           </div>
-          <a class="btn" href="HACKATHON_PROBLEM1.html">Read full problem →</a>
+          <div class="card-actions">
+            <a class="btn" href="HACKATHON_PROBLEM1.html">Read full problem →</a>
+            <a class="btn-ghost" href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.0/problem1_floorplan.zip">⬇ Download dataset (226 MB)</a>
+          </div>
         </div>
 
         <div class="problem-card p2">
@@ -551,7 +583,10 @@
             <span class="tag">BIM</span>
             <span class="tag orange">Geometry · Repair</span>
           </div>
-          <a class="btn" href="HACKATHON_PROBLEM2.html">Read full problem →</a>
+          <div class="card-actions">
+            <a class="btn" href="HACKATHON_PROBLEM2.html">Read full problem →</a>
+            <a class="btn-ghost" href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.0/problem2_ifc.zip">⬇ Download dataset</a>
+          </div>
         </div>
       </div>
     </section>
@@ -595,58 +630,6 @@
           <p>Before the deadline, tag your final commit: <code>git tag submission &amp;&amp; git push --tags</code>. We treat this as your locked submission. Commits after the deadline will be ignored.</p>
         </div>
       </div>
-    </section>
-
-    <!-- Submission requirements -->
-    <section>
-      <h2><span class="icon">📋</span> Submission Requirements</h2>
-      <p>Your final <code>README.md</code> <strong>must</strong> include all of the following. Submissions missing any of these may be disqualified.</p>
-
-      <table>
-        <thead>
-          <tr><th>#</th><th>Requirement</th><th>Notes</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>1</td><td>Team name &amp; members</td><td>Names, emails, and GitHub handles for everyone</td></tr>
-          <tr><td>2</td><td>Problem chosen</td><td>Clearly state Problem 1 or Problem 2</td></tr>
-          <tr><td>3</td><td>Approach summary</td><td>3–5 sentences on what you built and why</td></tr>
-          <tr><td>4</td><td>Demo video</td><td>2–3 min walkthrough on YouTube/Loom (unlisted is fine)</td></tr>
-          <tr><td>5</td><td>Tech stack</td><td>Frameworks, models, libraries</td></tr>
-          <tr><td>6</td><td>Setup instructions</td><td>Exact commands a judge runs to reproduce results</td></tr>
-          <tr><td>7</td><td>Results / outputs</td><td>Sample predictions, metrics, or screenshots</td></tr>
-          <tr><td>8</td><td>AI tools disclosure</td><td>If you used Copilot, Claude, Cursor, etc., say so</td></tr>
-        </tbody>
-      </table>
-
-      <div class="tip">
-        <strong>💡 Tip:</strong> Judges will not run your full training pipeline. Include a small inference script
-        or a few sample outputs in your repo so reviewers can verify your approach quickly.
-      </div>
-    </section>
-
-    <!-- Rules -->
-    <section>
-      <h2><span class="icon">📏</span> Rules</h2>
-      <h3>Team composition</h3>
-      <ul>
-        <li>Up to <strong>5 members</strong> per team</li>
-        <li>Each person can be on only one team</li>
-        <li>Solo participation is allowed but not encouraged</li>
-      </ul>
-
-      <h3>What's allowed</h3>
-      <ul>
-        <li>Open-source models, libraries, and pretrained weights — credit them in your README</li>
-        <li>AI coding assistants (Copilot, Claude, Cursor) — disclose in your README</li>
-        <li>External APIs (OpenAI, Hugging Face, etc.) — note them in the README so judges can provision keys if needed</li>
-      </ul>
-
-      <h3>What's not allowed</h3>
-      <ul>
-        <li>Submitting work built before the hackathon started</li>
-        <li>Sharing code or training data between competing teams</li>
-        <li>Hard-coding answers for the provided test set</li>
-      </ul>
     </section>
 
     <!-- Timeline -->
@@ -723,7 +706,8 @@
       <ul>
         <li><a href="HACKATHON_PROBLEM1.html">Problem 1 — Floor Plan Understanding (full spec)</a></li>
         <li><a href="HACKATHON_PROBLEM2.html">Problem 2 — IFC Model Repair (full spec)</a></li>
-        <li><a href="[DATASET_DOWNLOAD_URL]">Dataset download</a> (provided after team registration)</li>
+        <li><a href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.0/problem1_floorplan.zip">📦 Dataset — Problem 1 (Floor Plans, 226 MB)</a></li>
+        <li><a href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.0/problem2_ifc.zip">📦 Dataset — Problem 2 (IFC samples)</a></li>
         <li><a href="[CLASSROOM_INVITE_URL]">GitHub Classroom invite</a></li>
         <li><a href="[DISCORD_OR_SLACK_URL]">Hackathon chat (Discord/Slack)</a></li>
       </ul>
