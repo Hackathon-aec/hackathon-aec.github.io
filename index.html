@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEC Hackathon — Floor Plan Understanding & IFC Repair</title>
+  <meta name="description" content="An AEC hackathon on floor plan vectorization and IFC model repair. Hosted at IIT in collaboration with Allplan." />
+  <style>
+    :root {
+      --primary: #1a56db;
+      --primary-dark: #1e429f;
+      --accent: #0e9f6e;
+      --accent-dark: #047857;
+      --warn: #f59e0b;
+      --bg: #f9fafb;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --code-bg: #f3f4f6;
+      --tag-bg: #eff6ff;
+      --tag-text: #1d4ed8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      padding: 72px 24px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(14,159,110,0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    header > * { position: relative; z-index: 1; }
+
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 999px;
+      padding: 5px 18px;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+      font-weight: 500;
+    }
+
+    header h1 {
+      font-size: clamp(32px, 5.5vw, 56px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 18px;
+      line-height: 1.1;
+    }
+
+    header .tagline {
+      font-size: 19px;
+      color: #fff;
+      opacity: 0.9;
+      max-width: 720px;
+      margin: 0 auto 32px;
+    }
+
+    header .meta {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      font-size: 14px;
+      color: rgba(255,255,255,0.92);
+    }
+
+    header .meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Hero image */
+    .hero-image {
+      max-width: 1200px;
+      margin: -32px auto 0;
+      padding: 0 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 14px;
+      box-shadow: 0 20px 60px -15px rgba(15, 23, 42, 0.35), 0 8px 20px -8px rgba(15, 23, 42, 0.25);
+      border: 1px solid var(--border);
+    }
+
+    .hero-image .caption {
+      text-align: center;
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 14px;
+      font-style: italic;
+    }
+
+    /* Container */
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 56px 24px;
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 38px;
+      margin-bottom: 28px;
+    }
+
+    h2 {
+      font-size: 23px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2 .icon { font-size: 22px; }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 24px 0 10px;
+      color: #374151;
+    }
+
+    p { margin-bottom: 14px; color: #374151; }
+
+    ul, ol {
+      padding-left: 22px;
+      margin-bottom: 14px;
+      color: #374151;
+    }
+
+    li { margin-bottom: 6px; }
+
+    a { color: var(--primary); text-decoration: none; transition: color 0.15s; }
+    a:hover { text-decoration: underline; color: var(--primary-dark); }
+
+    code {
+      background: var(--code-bg);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 13.5px;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      color: #be185d;
+    }
+
+    pre {
+      background: #1e2433;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 18px 22px;
+      overflow-x: auto;
+      font-size: 13.5px;
+      line-height: 1.65;
+      margin: 14px 0;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+    }
+
+    pre code {
+      background: none; color: inherit; padding: 0; font-size: inherit;
+    }
+
+    /* Problem cards */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    .problem-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      background: var(--surface);
+      position: relative;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .problem-card.p1 { border-top: 4px solid var(--primary); }
+    .problem-card.p2 { border-top: 4px solid var(--accent); }
+
+    .problem-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px -10px rgba(15, 23, 42, 0.18);
+    }
+
+    .problem-card .label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .problem-card.p1 .label { color: var(--primary); }
+    .problem-card.p2 .label { color: var(--accent-dark); }
+
+    .problem-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 12px;
+      color: var(--text);
+    }
+
+    .problem-card p {
+      font-size: 14.5px;
+      flex-grow: 1;
+      margin-bottom: 18px;
+    }
+
+    .problem-card .tags { margin-bottom: 18px; }
+
+    .problem-card .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      align-self: flex-start;
+      transition: background 0.15s;
+    }
+
+    .problem-card.p2 .btn { background: var(--accent); }
+    .problem-card .btn:hover { background: var(--primary-dark); text-decoration: none; }
+    .problem-card.p2 .btn:hover { background: var(--accent-dark); }
+
+    /* Tags */
+    .tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      padding: 3px 11px;
+      font-size: 12.5px;
+      font-weight: 500;
+      margin: 3px 3px 3px 0;
+    }
+
+    .tag.green { background: #ecfdf5; color: #065f46; border-color: #6ee7b7; }
+    .tag.orange { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+
+    /* Steps */
+    .steps {
+      counter-reset: step;
+      display: grid;
+      gap: 16px;
+    }
+
+    .step {
+      position: relative;
+      padding: 20px 22px 20px 70px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      counter-increment: step;
+    }
+
+    .step::before {
+      content: counter(step);
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .step h3 {
+      margin-top: 0;
+      margin-bottom: 6px;
+      font-size: 16px;
+      color: var(--primary-dark);
+    }
+
+    .step p {
+      margin: 0;
+      font-size: 14.5px;
+    }
+
+    .step p + p { margin-top: 8px; }
+
+    /* CTA box */
+    .cta-box {
+      background: linear-gradient(135deg, #eff6ff 0%, #ecfdf5 100%);
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin: 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .cta-box .text { flex: 1; min-width: 200px; }
+
+    .cta-box h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
+    }
+
+    .cta-box p {
+      margin: 0;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    .cta-box .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14.5px;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .cta-box .btn-primary:hover {
+      background: var(--primary-dark);
+      text-decoration: none;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14.5px;
+    }
+
+    thead th {
+      background: #f0f4ff;
+      color: var(--primary-dark);
+      font-weight: 600;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 2px solid #c7d2fe;
+    }
+
+    tbody tr:nth-child(even) { background: #f9fafb; }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    /* Tip box */
+    .tip {
+      background: #fffbeb;
+      border-left: 4px solid var(--warn);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 14.5px;
+      color: #78350f;
+    }
+
+    .tip strong { color: #92400e; }
+
+    .info {
+      background: #eff6ff;
+      border-left: 4px solid var(--primary);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 14.5px;
+      color: #1e3a8a;
+    }
+
+    /* FAQ */
+    details {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #f9fafb;
+      transition: background 0.15s;
+    }
+
+    details[open] { background: var(--surface); }
+
+    summary {
+      padding: 14px 18px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text);
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary::after {
+      content: "+";
+      font-size: 22px;
+      color: var(--muted);
+      font-weight: 400;
+      transition: transform 0.2s;
+    }
+
+    details[open] summary::after { transform: rotate(45deg); }
+
+    details > div {
+      padding: 0 18px 16px;
+      font-size: 14.5px;
+      color: #374151;
+    }
+
+    /* Footer */
+    footer {
+      background: #1e2433;
+      color: #94a3b8;
+      padding: 40px 24px;
+      text-align: center;
+      font-size: 14px;
+      margin-top: 40px;
+    }
+
+    footer p { color: #94a3b8; margin: 4px 0; }
+    footer a { color: #93c5fd; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      header { padding: 48px 20px 40px; }
+      section { padding: 28px 22px; }
+      .hero-image { padding: 0 16px; margin-top: -20px; }
+      .step { padding: 18px 18px 18px 60px; }
+      .step::before { left: 14px; top: 16px; width: 32px; height: 32px; font-size: 14px; }
+      .cta-box { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="badge">IIT × Allplan</span>
+    <h1>AEC Hackathon</h1>
+    <p class="tagline">
+      Build AI for the built world. Tackle floor plan understanding and IFC model repair —
+      two open problems from real architecture, engineering, and construction workflows.
+    </p>
+    <div class="meta">
+      <span>📅 [Event dates]</span>
+      <span>📍 [Venue]</span>
+      <span>👥 Teams of up to 5</span>
+    </div>
+  </header>
+
+  <div class="hero-image">
+    <img src="hack_image_1.jpg" alt="Floor plan understanding pipeline: raw image, semantic segmentation, polygon vectorization" />
+    <p class="caption">From raw floor plans to structured geometry — one of the two challenges you'll be solving.</p>
+  </div>
+
+  <div class="container">
+
+    <!-- Problem statements -->
+    <section>
+      <h2><span class="icon">🎯</span> Choose Your Challenge</h2>
+      <p>
+        Pick <strong>one</strong> of the two problem statements below. Both come with full datasets,
+        sample submissions, and clear evaluation criteria. Click through for the full spec.
+      </p>
+
+      <div class="problem-grid">
+        <div class="problem-card p1">
+          <div class="label">Problem 1 · Computer Vision</div>
+          <h3>Floor Plan Understanding</h3>
+          <p>
+            Turn raw floor plan images into structured geometry. Semantic segmentation of walls, doors,
+            windows, and rooms — followed by polygon vectorization with real-world coordinates.
+          </p>
+          <div class="tags">
+            <span class="tag">Segmentation</span>
+            <span class="tag">Vectorization</span>
+            <span class="tag green">PNG · SVG · JSON</span>
+          </div>
+          <a class="btn" href="HACKATHON_PROBLEM1.html">Read full problem →</a>
+        </div>
+
+        <div class="problem-card p2">
+          <div class="label">Problem 2 · BIM / Geometry</div>
+          <h3>IFC Model Repair with AI</h3>
+          <p>
+            Detect and repair faults in corrupted IFC building models. Identify geometric inconsistencies,
+            classify the fault type, and produce a clean, valid IFC file ready for downstream BIM tools.
+          </p>
+          <div class="tags">
+            <span class="tag">IFC</span>
+            <span class="tag">BIM</span>
+            <span class="tag orange">Geometry · Repair</span>
+          </div>
+          <a class="btn" href="HACKATHON_PROBLEM2.html">Read full problem →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- How to participate -->
+    <section>
+      <h2><span class="icon">🚀</span> How to Submit</h2>
+      <p>
+        We use <strong>GitHub Classroom</strong> to give every team a private repository. One link does
+        everything — no manual setup, no email back-and-forth. Each team gets a starter repo pre-loaded
+        with a README template.
+      </p>
+
+      <div class="cta-box">
+        <div class="text">
+          <h4>Click here to set up your team repo</h4>
+          <p>One person per team clicks first to create the team — others join after.</p>
+        </div>
+        <a class="btn-primary" href="[CLASSROOM_INVITE_URL]">Accept Assignment →</a>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <h3>Team lead clicks the invite link</h3>
+          <p>One member per team signs in to GitHub, clicks <em>"Create a new team"</em>, and names it using the format <code>team-&lt;yourname&gt;</code> — lowercase, hyphens only. Examples: <code>team-rocket</code>, <code>team-byteforce</code>, <code>team-pixelpushers</code>.</p>
+        </div>
+        <div class="step">
+          <h3>Teammates join the same team</h3>
+          <p>Other team members click the same invite link, sign in, and select <em>your team's name</em> from the list. <strong>Do not create duplicate teams.</strong></p>
+        </div>
+        <div class="step">
+          <h3>Code in your repo</h3>
+          <p>Your team gets a private repo at <code>github.com/Hackathon-aec/hackathon-submission-&lt;team-name&gt;</code> pre-loaded with a README template. Push your code, commit often.</p>
+        </div>
+        <div class="step">
+          <h3>Fill in the README before the deadline</h3>
+          <p>Replace the template README with your project details. The README <strong>is</strong> your submission — see the requirements below. Anything not in the README won't be reviewed.</p>
+        </div>
+        <div class="step">
+          <h3>Tag a final commit</h3>
+          <p>Before the deadline, tag your final commit: <code>git tag submission &amp;&amp; git push --tags</code>. We treat this as your locked submission. Commits after the deadline will be ignored.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Submission requirements -->
+    <section>
+      <h2><span class="icon">📋</span> Submission Requirements</h2>
+      <p>Your final <code>README.md</code> <strong>must</strong> include all of the following. Submissions missing any of these may be disqualified.</p>
+
+      <table>
+        <thead>
+          <tr><th>#</th><th>Requirement</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Team name &amp; members</td><td>Names, emails, and GitHub handles for everyone</td></tr>
+          <tr><td>2</td><td>Problem chosen</td><td>Clearly state Problem 1 or Problem 2</td></tr>
+          <tr><td>3</td><td>Approach summary</td><td>3–5 sentences on what you built and why</td></tr>
+          <tr><td>4</td><td>Demo video</td><td>2–3 min walkthrough on YouTube/Loom (unlisted is fine)</td></tr>
+          <tr><td>5</td><td>Tech stack</td><td>Frameworks, models, libraries</td></tr>
+          <tr><td>6</td><td>Setup instructions</td><td>Exact commands a judge runs to reproduce results</td></tr>
+          <tr><td>7</td><td>Results / outputs</td><td>Sample predictions, metrics, or screenshots</td></tr>
+          <tr><td>8</td><td>AI tools disclosure</td><td>If you used Copilot, Claude, Cursor, etc., say so</td></tr>
+        </tbody>
+      </table>
+
+      <div class="tip">
+        <strong>💡 Tip:</strong> Judges will not run your full training pipeline. Include a small inference script
+        or a few sample outputs in your repo so reviewers can verify your approach quickly.
+      </div>
+    </section>
+
+    <!-- Rules -->
+    <section>
+      <h2><span class="icon">📏</span> Rules</h2>
+      <h3>Team composition</h3>
+      <ul>
+        <li>Up to <strong>5 members</strong> per team</li>
+        <li>Each person can be on only one team</li>
+        <li>Solo participation is allowed but not encouraged</li>
+      </ul>
+
+      <h3>What's allowed</h3>
+      <ul>
+        <li>Open-source models, libraries, and pretrained weights — credit them in your README</li>
+        <li>AI coding assistants (Copilot, Claude, Cursor) — disclose in your README</li>
+        <li>External APIs (OpenAI, Hugging Face, etc.) — note them in the README so judges can provision keys if needed</li>
+      </ul>
+
+      <h3>What's not allowed</h3>
+      <ul>
+        <li>Submitting work built before the hackathon started</li>
+        <li>Sharing code or training data between competing teams</li>
+        <li>Hard-coding answers for the provided test set</li>
+      </ul>
+    </section>
+
+    <!-- Timeline -->
+    <section>
+      <h2><span class="icon">📅</span> Timeline</h2>
+      <table>
+        <thead>
+          <tr><th>Phase</th><th>Date &amp; Time (IST)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Registrations open</td><td>[DATE]</td></tr>
+          <tr><td>Kickoff &amp; problem reveal</td><td>[DATE TIME]</td></tr>
+          <tr><td>Hacking starts</td><td>[DATE TIME]</td></tr>
+          <tr><td>Mentor office hours</td><td>[DATE TIME]</td></tr>
+          <tr><td><strong>Submission deadline</strong></td><td><strong>[DATE TIME]</strong></td></tr>
+          <tr><td>Judging</td><td>[DATE]</td></tr>
+          <tr><td>Results &amp; awards</td><td>[DATE]</td></tr>
+        </tbody>
+      </table>
+      <div class="info">
+        <strong>ℹ️ Note:</strong> Submission deadline is firm. Commits pushed after the deadline will not be evaluated.
+        Tag your final commit with <code>submission</code> to mark your locked entry.
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section>
+      <h2><span class="icon">❓</span> FAQ</h2>
+
+      <details>
+        <summary>Do I have to attempt both problems?</summary>
+        <div>No — pick the one you find most interesting. Teams that genuinely tackle both <em>can</em> submit two solutions, but a polished single submission almost always beats two half-finished ones.</div>
+      </details>
+
+      <details>
+        <summary>What if I don't have GPU access?</summary>
+        <div>Both problems can be approached with smaller models or rule-based / classical CV techniques. Free options like Google Colab, Kaggle Notebooks, and Hugging Face Spaces give you GPU time. Pretrained models (foundation models, segmentation backbones, IFC parsers) are encouraged.</div>
+      </details>
+
+      <details>
+        <summary>Can I use ChatGPT / Claude / Copilot?</summary>
+        <div>Yes — just disclose it in your README. The judging values the engineering and creativity, not whether you typed every line yourself.</div>
+      </details>
+
+      <details>
+        <summary>What happens if my repo is empty at the deadline?</summary>
+        <div>That's a no-submission. The repo must contain your code and a complete README at the deadline. We don't accept late submissions.</div>
+      </details>
+
+      <details>
+        <summary>Will my code be made public?</summary>
+        <div>Repos are private during the event. After judging, we may invite winning teams to make theirs public for a showcase — that's optional and your choice.</div>
+      </details>
+
+      <details>
+        <summary>Who owns the IP of what I build?</summary>
+        <div>You do. Code is licensed MIT by default in the starter template. You're free to take your work forward however you want after the event.</div>
+      </details>
+
+      <details>
+        <summary>What if my whole team picks the same name as another team?</summary>
+        <div>GitHub Classroom enforces uniqueness — the second team to try will get an error and can pick a different name. First-come-first-served.</div>
+      </details>
+
+      <details>
+        <summary>Where do I ask questions during the event?</summary>
+        <div>Post in the official hackathon Discord/Slack channel ([LINK]). For private questions, email <a href="mailto:[ORGANIZER_EMAIL]">[ORGANIZER_EMAIL]</a>.</div>
+      </details>
+    </section>
+
+    <!-- Resources -->
+    <section>
+      <h2><span class="icon">📚</span> Resources</h2>
+      <ul>
+        <li><a href="HACKATHON_PROBLEM1.html">Problem 1 — Floor Plan Understanding (full spec)</a></li>
+        <li><a href="HACKATHON_PROBLEM2.html">Problem 2 — IFC Model Repair (full spec)</a></li>
+        <li><a href="[DATASET_DOWNLOAD_URL]">Dataset download</a> (provided after team registration)</li>
+        <li><a href="[CLASSROOM_INVITE_URL]">GitHub Classroom invite</a></li>
+        <li><a href="[DISCORD_OR_SLACK_URL]">Hackathon chat (Discord/Slack)</a></li>
+      </ul>
+    </section>
+
+  </div>
+
+  <footer>
+    <p><strong>AEC Hackathon</strong> — IIT × Allplan</p>
+    <p>Questions? Email <a href="mailto:[ORGANIZER_EMAIL]">[ORGANIZER_EMAIL]</a></p>
+    <p style="margin-top: 12px; font-size: 13px; opacity: 0.7;">Hosted on GitHub Pages.</p>
+  </footer>
+
+</body>
+</html>
