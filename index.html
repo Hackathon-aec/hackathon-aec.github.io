@@ -810,6 +810,35 @@
       transform: translateY(-2px);
     }
 
+    .btn-test {
+      background: transparent;
+      color: var(--neme-cyan-deep);
+      border-color: var(--neme-cyan);
+      position: relative;
+    }
+    .btn-test::before {
+      content: "";
+      position: absolute;
+      top: -1px;
+      right: -1px;
+      width: 8px;
+      height: 8px;
+      background: var(--neme-cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px var(--paper);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .btn-test:hover {
+      background: var(--neme-cyan);
+      color: var(--paper);
+      border-color: var(--neme-cyan);
+      transform: translateY(-2px);
+    }
+    .btn-test:hover::before {
+      background: var(--paper);
+      box-shadow: 0 0 0 2px var(--neme-cyan);
+    }
+
     .btn .icon { font-size: 14px; }
 
     /* ==================== STEPS ==================== */
@@ -1282,6 +1311,7 @@
           <div class="problem-actions">
             <a class="btn btn-primary" href="HACKATHON_PROBLEM1.html">Read spec <span class="icon">→</span></a>
             <a class="btn btn-secondary" href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.2/problem1_floorplan.zip">Dataset · 911 MB <span class="icon">↓</span></a>
+            <a class="btn btn-test" href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.2/problem1_test_data.zip">Test data · 4 MB <span class="icon">↓</span></a>
           </div>
         </article>
 
@@ -1303,6 +1333,7 @@
           <div class="problem-actions">
             <a class="btn btn-primary" href="HACKATHON_PROBLEM2.html">Read spec <span class="icon">→</span></a>
             <a class="btn btn-secondary" href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.2/problem2_ifc.zip">Dataset <span class="icon">↓</span></a>
+            <a class="btn btn-test" href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.2/problem2_test_data.zip">Test data · 4 MB <span class="icon">↓</span></a>
           </div>
         </article>
       </div>
