@@ -839,6 +839,52 @@
       box-shadow: 0 0 0 2px var(--neme-cyan);
     }
 
+    .btn-corrupt {
+      background: transparent;
+      color: #b54a13;
+      border-color: #d97316;
+      border-style: dashed;
+      position: relative;
+    }
+    .btn-corrupt::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 8px;
+      width: 4px;
+      height: 4px;
+      background: #d97316;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      box-shadow:
+        0 -3px 0 0 #d97316,
+        0 3px 0 0 #d97316;
+      animation: glitch 2.5s ease-in-out infinite;
+    }
+    @keyframes glitch {
+      0%, 100% { transform: translateY(-50%) translateX(0); opacity: 1; }
+      20% { transform: translateY(-50%) translateX(1px); opacity: 0.8; }
+      40% { transform: translateY(-50%) translateX(-1px); opacity: 1; }
+      60% { transform: translateY(-50%) translateX(0.5px); opacity: 0.6; }
+      80% { transform: translateY(-50%) translateX(-0.5px); opacity: 1; }
+    }
+    .btn-corrupt {
+      padding-left: 26px;
+    }
+    .btn-corrupt:hover {
+      background: #d97316;
+      color: var(--paper);
+      border-color: #d97316;
+      border-style: solid;
+      transform: translateY(-2px);
+    }
+    .btn-corrupt:hover::before {
+      background: var(--paper);
+      box-shadow:
+        0 -3px 0 0 var(--paper),
+        0 3px 0 0 var(--paper);
+    }
+
     .btn .icon { font-size: 14px; }
 
     /* ==================== STEPS ==================== */
@@ -1334,6 +1380,7 @@
             <a class="btn btn-primary" href="HACKATHON_PROBLEM2.html">Read spec <span class="icon">→</span></a>
             <a class="btn btn-secondary" href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.2/problem2_ifc.zip">Dataset <span class="icon">↓</span></a>
             <a class="btn btn-test" href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.2/problem2_test_data.zip">Test data · 4 MB <span class="icon">↓</span></a>
+            <a class="btn btn-corrupt" href="https://github.com/Hackathon-aec/hackathon-aec.github.io/releases/download/v1.2/problem2_corrupted_ifcs.zip">Corrupted IFCs · 25 KB <span class="icon">↓</span></a>
           </div>
         </article>
       </div>
